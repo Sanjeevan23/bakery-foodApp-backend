@@ -1,21 +1,24 @@
 // src/products/food/food.controller.ts
 import {
   Controller, Get, Post, Put, Delete, Param, Body, UseGuards, UseInterceptors, UploadedFile,
-  BadRequestException,
-  NotFoundException,
-  InternalServerErrorException,
+  BadRequestException, NotFoundException, InternalServerErrorException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Types } from 'mongoose';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+
 import { FoodService } from './food.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { UpdateFoodDto } from './dto/update-food.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { cloudinaryV2 } from '../../common/cloudinary.config';
 import { Role } from '../../common/roles.enum';
-import { Types } from 'mongoose';
 import { CategoriesService } from '../../categories/categories.service';
+
+import { flattenValidationErrors, parseArrayField } from '../../common/utils/request-utils';
 
 @Controller('food')
 export class FoodController {
@@ -41,20 +44,40 @@ export class FoodController {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async create(
-    @Body() body: CreateFoodDto,
+    @Body() rawBody: any,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     try {
-      // required field guard (DTO + ValidationPipe should already validate)
+      // normalize body (form-data sends everything as strings)
+      const body: any = { ...rawBody };
+
+      // ingredients: accept JSON string OR comma-separated string
+      body.ingredients = parseArrayField(body.ingredients);
+
+      // Basic required checks
       if (!body.name || body.price === undefined || !body.type || !body.categoryId) {
         throw new BadRequestException('Missing required fields: name, price, type, categoryId');
       }
 
-      // Validate category exists and get name
+      // validate categoryId format
+      if (!Types.ObjectId.isValid(body.categoryId)) {
+        throw new BadRequestException('Invalid categoryId format');
+      }
+
+      // Manual DTO validation (handles nested arrays reliably)
+      const dto = plainToInstance(CreateFoodDto, body);
+      const errors = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
+      if (errors.length > 0) {
+        const messages = flattenValidationErrors(errors);
+        throw new BadRequestException(messages);
+      }
+
+      // ensure category exists and fetch name
       const category = await this.categoriesService.findById(body.categoryId);
       if (!category) throw new NotFoundException('Category not found');
 
-      let imageUrl = body.image ?? ''; // if client provided an image URL in JSON
+      // upload image if present
+      let imageUrl = body.image ?? '';
       if (file) {
         const upload = await cloudinaryV2.uploader.upload(file.path, {
           folder: 'food',
@@ -64,12 +87,12 @@ export class FoodController {
       }
 
       const foodData = {
-        name: body.name,
-        shortDescription: body.shortDescription ?? '',
-        longDescription: body.longDescription ?? '',
-        ingredients: body.ingredients ?? [],
-        price: body.price,
-        type: body.type,
+        name: dto.name,
+        shortDescription: dto.shortDescription ?? '',
+        longDescription: dto.longDescription ?? '',
+        ingredients: dto.ingredients ?? [],
+        price: dto.price,
+        type: dto.type,
         categoryId: new Types.ObjectId(body.categoryId),
         categoryName: category.name,
         image: imageUrl,
@@ -77,40 +100,64 @@ export class FoodController {
 
       return await this.foodService.create(foodData);
     } catch (err: any) {
-      // If we received a Mongoose validation error, pass it back clearly
       if (err.name === 'ValidationError') {
         throw new BadRequestException(err.message);
       }
-      // If error is an HttpException above, rethrow
       if (err.status && err.response) throw err;
       throw new InternalServerErrorException(err.message || 'Failed to create food');
     }
   }
 
-  // Admin only → Update food (details + optional image)
+  // Admin only → Update food (details + optional image + optional category)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Put(':id')
   @UseInterceptors(FileInterceptor('image')) // optional image
   async update(
     @Param('id') id: string,
-    @Body() body: UpdateFoodDto,
+    @Body() rawBody: any,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     try {
-      let dataToUpdate: Partial<UpdateFoodDto & { image?: string }> = { ...body };
+      const body: any = { ...rawBody };
 
+      // parse ingredients if provided as string (JSON string or comma list)
+      if (body.ingredients !== undefined) {
+        body.ingredients = parseArrayField(body.ingredients);
+      }
+
+      // If changing category, validate id + existence
+      if (body.categoryId) {
+        if (!Types.ObjectId.isValid(body.categoryId)) {
+          throw new BadRequestException('Invalid categoryId format');
+        }
+        const category = await this.categoriesService.findById(body.categoryId);
+        body.categoryName = category.name;
+        body.categoryId = new Types.ObjectId(body.categoryId);
+      }
+
+      // If image provided, upload and set url
       if (file) {
         const upload = await cloudinaryV2.uploader.upload(file.path, {
           folder: 'food',
           overwrite: true,
         });
-        dataToUpdate.image = upload.secure_url;
+        body.image = upload.secure_url;
       }
 
-      return await this.foodService.update(id, dataToUpdate);
+      // Validate update DTO manually (skip missing props)
+      const dto = plainToInstance(UpdateFoodDto, body);
+      const errors = await validate(dto, { skipMissingProperties: true, whitelist: true, forbidNonWhitelisted: true });
+      if (errors.length > 0) {
+        const messages = flattenValidationErrors(errors);
+        throw new BadRequestException(messages);
+      }
+
+      // Now perform update
+      return await this.foodService.update(id, body);
     } catch (err: any) {
       if (err.status && err.response) throw err;
+      if (err.name === 'ValidationError') throw new BadRequestException(err.message);
       throw new InternalServerErrorException(err.message || 'Failed to update food');
     }
   }

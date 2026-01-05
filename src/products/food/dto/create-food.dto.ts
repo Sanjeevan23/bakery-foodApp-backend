@@ -1,6 +1,6 @@
 // src/products/food/create-food.dto.ts
 import { Type } from 'class-transformer';
-import { IsString, IsNumber, IsArray, IsEnum, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsArray, IsEnum, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateFoodDto {
 

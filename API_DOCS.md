@@ -220,6 +220,106 @@ Delete food item (Admin only).
 Headers:
 Authorization: Bearer <JWT_TOKEN>
 
+---------------------------------------------
+## Beverage Endpoints
+
+### GET /beverages
+Get all beverage items.  
+Accessible by customer, cashier, delivery, admin**.
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### GET /beverages/:id
+Get a single beverage by ID.  
+Accessible by **customer, cashier, delivery, admin**.
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### POST /beverages
+Create a beverage item (**Admin only**).
+
+Headers:
+Authorization: Bearer <ADMIN_JWT_TOKEN>
+
+Content-Type:
+- application/json **OR**
+- multipart/form-data (if uploading image)
+
+#### With Image (multipart/form-data)
+
+Body (form-data):
+key: name              → Coca Cola  
+key: shortDescription  → Soft drink  
+key: longDescription   → Carbonated soft drink  
+key: ingredients       → [Carbonated water, sugar, caffeine]  
+key: type              → non-alcoholic  
+key: categoryId        → <category_id>  
+key: sizes             → [{"size":"330ml","price":1.2},{"size":"500ml","price":2.5}]  
+key: image             → <select image file>
+
+#### Without Image (Raw JSON)
+
+Body:
+{
+  "name": "Coca Cola",
+  "shortDescription": "Soft drink",
+  "longDescription": "Carbonated soft drink",
+  "ingredients": ["Carbonated water", "Sugar", "Caffeine"],
+  "type": "non-alcoholic",
+  "categoryId": "<category_id>",
+  "sizes": [
+    { "size": "330ml", "price": 1.2 },
+    { "size": "500ml", "price": 2.5 }
+  ]
+}
+
+---------------------------------------------
+
+## ads Endpoints
+
+### GET /ads
+Get all ads.
+Accessible by all logged-in users.
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+## POST /ads
+Create a ads (Admin only).
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+Body (form-data):
+image: file
+title: "Weekend Offer" ***optional***
+endDate: 2026-02-01 ***optional***
+
+---------------------------------------------
+
+### PUT /ads/:id
+Update ads (Admin only).
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### DELETE /ads/:id
+Delete ads (Admin only).
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
 
 <!----------------------------------------------------------->
 

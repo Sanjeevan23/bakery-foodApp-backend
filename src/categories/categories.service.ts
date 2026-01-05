@@ -6,10 +6,14 @@ import { Category, CategoryDocument } from './schemas/category.schema';
 
 @Injectable()
 export class CategoriesService {
-  constructor(@InjectModel(Category.name) private categoryModel: Model<CategoryDocument>) {}
+  constructor(@InjectModel(Category.name) private categoryModel: Model<CategoryDocument>) { }
 
-  async findAll(): Promise<Category[]> {
-    return this.categoryModel.find().sort({ name: 1 });
+  async findAll(): Promise<{ total: number; items: Category[] }> {
+    const items = await this.categoryModel.find().sort({ name: 1 });
+    return {
+      total: items.length,
+      items,
+    };
   }
 
   async findById(id: string): Promise<Category> {

@@ -9,14 +9,18 @@ export class FoodService {
   constructor(
     @InjectModel(Food.name)
     private foodModel: Model<FoodDocument>,
-  ) {}
+  ) { }
 
   create(data: Partial<Food>) {
     return this.foodModel.create(data);
   }
 
-  findAll() {
-    return this.foodModel.find({ isActive: true });
+  async findAll() {
+    const items = await this.foodModel.find({ isActive: true });
+    return {
+      total: items.length,
+      items,
+    };
   }
 
   async update(id: string, data: Partial<Food>) {
