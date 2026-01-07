@@ -63,4 +63,4 @@ $ npm run start:prod
 
 ## Run tests
 
-Refer the **API_DOCS.md** file for the api endpoints 
+Refer the **API_DOCS.md** file for all the api endpoints 

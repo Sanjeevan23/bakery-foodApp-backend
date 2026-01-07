@@ -16,11 +16,13 @@ import { PopularProductsModule } from './popular-products/popular-products.modul
 import { FavouriteProductsModule } from './favourite-products/favourite-products.module';
 import { OffersModule } from './offers/offers.module';
 import { TaxesModule } from './taxes/taxes.module';
+import { ExtraIngredientsModule } from './extra-ingredients/extra-ingredients.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // loads .env
-    DatabaseModule, UsersModule, AuthModule, CategoriesModule, FoodModule, BeverageModule, AdsModule, PopularProductsModule, FavouriteProductsModule, OffersModule, TaxesModule,                           // connects MongoDB
+    DatabaseModule, UsersModule, AuthModule, CategoriesModule, FoodModule, BeverageModule, AdsModule, PopularProductsModule, FavouriteProductsModule, OffersModule, TaxesModule, ExtraIngredientsModule, OrdersModule,                           // connects MongoDB
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,8 +1,7 @@
 # API_DOCS.md
 <!----------------------------------------------------------->
-
 ## Auth Endpoints
-------------------
+
 ### POST /auth/request-otp
 Request a 6-digit OTP to email.  
 Used for **registration** and **forgot password**.  
@@ -75,7 +74,7 @@ Body:
 <!----------------------------------------------------------->
 
 ## Admin Endpoints (JWT + Role = ADMIN)
----------------------------------------
+
 ### POST /admin/create-cashier
 Create cashier account.  
 Only admin token allowed.  
@@ -108,7 +107,8 @@ Body:
   "phone": "0771234567"
 }
 
----------------------------------------------
+<!----------------------------------------------------------->
+
 ## Category Endpoints
 
 ### POST /categories
@@ -155,7 +155,7 @@ Accessible by customer, cashier, delivery, admin.
 Headers:
 Authorization: Bearer <JWT_TOKEN>
 
----------------------------------------------
+<!----------------------------------------------------------->
 
 ## Food Endpoints
 
@@ -220,7 +220,8 @@ Delete food item (Admin only).
 Headers:
 Authorization: Bearer <JWT_TOKEN>
 
----------------------------------------------
+<!----------------------------------------------------------->
+
 ## Beverage Endpoints
 
 ### GET /beverages
@@ -279,7 +280,7 @@ Body:
   ]
 }
 
----------------------------------------------
+<!----------------------------------------------------------->
 
 ## ads Endpoints
 
@@ -352,7 +353,7 @@ Delete popular products (Admin only).
 Headers:
 Authorization: Bearer <JWT_TOKEN>
 
----------------------------------------------
+<!----------------------------------------------------------->
 
 ## Offer endpoints
 
@@ -408,7 +409,7 @@ Delete offer by offer id (admin only).
 Headers:
 Authorization: Bearer <JWT_TOKEN>
 
----------------------------------------------
+<!----------------------------------------------------------->
 
 ## Tax endpoints
 
@@ -450,6 +451,56 @@ Authorization: Bearer <JWT_TOKEN>
 
 ### GET /taxes
 Get all taxes 
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+<!----------------------------------------------------------->
+
+## Extra Ingredients endpoints
+
+### POST /extra-ingredients
+Create a Extra Ingredient (ADMIN only).
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+Body:
+
+{
+  "name": "Extra Cheese",
+  "price": 1.5,
+  "isActive": true **(optional)**
+}
+
+---------------------------------------------
+
+### GET /extra-ingredients
+Get active extra-ingredients.
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### GET /extra-ingredients/admin
+Get all extra-ingredients. (ADMIN only).
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### PUT /extra-ingredients/:id
+Edit extra-ingredients (ADMIN only).
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### DELETE /extra-ingredients/:id
+Delete extra-ingredients (ADMIN only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -576,3 +627,92 @@ Headers:
 Authorization: Bearer <JWT_TOKEN>
 
 ---------------------------------------------
+
+<!----------------------------------------------------------->
+
+## Orders Endpoints
+
+### POST /orders
+Create an order (logged-in user).
+
+Headers: 
+Authorization: Bearer <JWT>
+
+Body (JSON):
+{
+  "items": [
+    {
+      "productId": "<productObjectId>",
+      "productType": "",     ***("food"|"beverage")***
+      "quantity": 2,
+      "extras": ["<extraIngredientId>", ...],    ***(optional)***
+      "unitPrice": 5.5  ***optional (snapshot); if omitted server uses product price***
+    }
+  ],
+  "orderType": "",    ***("dine-in"|"takeaway"|"delivery")***
+  "paymentType": "card",
+  "subTotal": 20,
+  "tax": 2,
+  "total": 22,
+  "loyaltyPointsUsed": 0, ***(optional)***
+  "tip": 0,   ***(optional, required for delivery if provided)***
+  "address": {       ***(required only for delivery)***
+    "line1": "123 Street",
+    "line2": "Apt 5",
+    "instruction": "Leave at door"
+  }
+}
+
+---------------------------------------------
+
+### GET /orders
+- If requester is staff (admin, cashier, delivery) => returns all orders (total + items)
+- Otherwise returns the authenticated user's orders.
+
+Headers: 
+Authorization: Bearer <JWT>
+
+---------------------------------------------
+
+### GET /orders/my
+Get logged-in user's orders.
+
+Headers: Authorization: Bearer <JWT>
+
+---------------------------------------------
+
+### GET /orders/:id
+Get single order by id.
+- Allowed: order owner OR staff (admin/cashier/delivery)
+
+Headers: Authorization: Bearer <JWT>
+
+---------------------------------------------
+
+### POST /orders/request-complete/:id
+- Request OTP to be sent to the order owner's email (cashier/delivery/admin).
+
+Headers: 
+Authorization: Bearer <JWT> (role cashier/delivery/admin)
+
+---------------------------------------------
+
+### POST /orders/complete/:id
+- Complete the order by supplying OTP (cashier/delivery/admin).
+
+Headers: 
+Authorization: Bearer <JWT> (role cashier/delivery/admin)
+
+Body: 
+{ "otp": "123456" }
+
+---------------------------------------------
+
+### DELETE /orders/:id
+- Delete order (admin only).
+
+Headers: 
+Authorization: Bearer <JWT> (role admin)
+
+---------------------------------------------
+
