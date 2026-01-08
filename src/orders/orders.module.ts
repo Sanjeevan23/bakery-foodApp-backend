@@ -11,6 +11,7 @@ import { Beverage, BeverageSchema } from '../products/beverage/schemas/beverage.
 import { ExtraIngredient, ExtraIngredientSchema } from '../extra-ingredients/schemas/extra-ingredient.schema';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { Otp, OtpSchema } from '../auth/schemas/otp.schema';
+import { LoyaltyModule } from 'src/loyalty/loyalty.module';
 
 @Module({
   imports: [
@@ -22,8 +23,10 @@ import { Otp, OtpSchema } from '../auth/schemas/otp.schema';
       { name: User.name, schema: UserSchema },
       { name: Otp.name, schema: OtpSchema },
     ]),
+    // allow injection of LoyaltyService
+    LoyaltyModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
 })
-export class OrdersModule {}
+export class OrdersModule { }

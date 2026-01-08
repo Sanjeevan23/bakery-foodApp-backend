@@ -24,6 +24,9 @@ export class Food {
   @Prop({ default: 0 })
   rating: number;
 
+  @Prop({ default: 0 })
+  reviewCount: number;
+  
   @Prop({ enum: ['halal', 'haram'], required: true })
   type: 'halal' | 'haram';
 

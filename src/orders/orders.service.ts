@@ -18,6 +18,7 @@ import { sendOtpEmail } from '../common/email.service';
 import type { UploadApiResponse } from 'cloudinary';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderItemDto } from './dto/order-item.dto';
+import { LoyaltyService } from '../loyalty/loyalty.service';
 
 type ProductType = 'food' | 'beverage';
 
@@ -47,6 +48,7 @@ export class OrdersService {
         @InjectModel(ExtraIngredient.name) private extraModel: Model<ExtraIngredient>,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
         @InjectModel(Otp.name) private otpModel: Model<OtpDocument>,
+        private readonly loyaltyService: LoyaltyService,
     ) { }
 
     // upload buffer to cloudinary using upload_stream with typed response
@@ -80,6 +82,33 @@ export class OrdersService {
             }
             // you can also validate address fields further if needed (line1, city etc.)
         }
+
+        // Validate loyalty usage pre-checks (before creating order)
+        const pointsToUse = Number(dto.loyaltyPointsUsed ?? 0);
+        if (pointsToUse && pointsToUse > 0) {
+            // only dine-in & takeaway allowed
+            if (!['dine-in', 'takeaway'].includes(dto.orderType)) {
+                throw new BadRequestException('Loyalty points can only be used for dine-in or takeaway orders');
+            }
+            // min order threshold to apply loyalty
+            if (Number(dto.subTotal) < 10) {
+                throw new BadRequestException('Minimum order subtotal £10 required to use loyalty points');
+            }
+            // ensure totals numeric & consistent
+            if (isNaN(Number(dto.total))) {
+                throw new BadRequestException('Invalid total');
+            }
+            if (pointsToUse > Number(dto.total)) {
+                throw new BadRequestException('Loyalty points used cannot exceed order total');
+            }
+
+            // ensure wallet has enough points
+            const wallet = await this.loyaltyService.getOrCreateWallet(userId);
+            if (wallet.totalPoints < pointsToUse) {
+                throw new BadRequestException('Not enough loyalty points');
+            }
+        }
+
         const itemsProcessed: OrderItemSnapshot[] = [];
 
         for (const itemRaw of dto.items as OrderItemDto[]) {
@@ -171,7 +200,7 @@ export class OrdersService {
             paymentType: dto.paymentType,
             subTotal,
             tax,
-            loyaltyPointsUsed: dto.loyaltyPointsUsed ?? 0,
+            loyaltyPointsUsed: pointsToUse ?? 0,
             tip: dto.tip ?? 0,
             total,
             address: dto.address ?? undefined,
@@ -179,13 +208,29 @@ export class OrdersService {
             orderStatus: 'pending',
         });
 
-        // QR creation and upload
-        const qrBuffer = await QRCode.toBuffer(orderDoc._id.toString());
-        const qrUrl = await this.uploadBufferToCloudinary(qrBuffer, 'orders/qr');
+        // generate & upload QR
+        try {
+            const qrBuffer = await QRCode.toBuffer(orderDoc._id.toString());
+            const qrUrl = await this.uploadBufferToCloudinary(qrBuffer, 'orders/qr');
+            orderDoc.qrImageUrl = qrUrl;
+            await orderDoc.save();
+        } catch (err) {
+            // QR generation/upload error should not block order creation; just log and continue
+            // but we still keep order
+            // if you want to fail the whole transaction, throw error here
+            console.error('QR generation/upload failed', err);
+        }
 
-        orderDoc.qrImageUrl = qrUrl;
-        await orderDoc.save();
-
+        // If loyalty points were used, deduct and log now (link to created order)
+        if (pointsToUse && pointsToUse > 0) {
+            try {
+                await this.loyaltyService.spendPoints(userId, orderDoc._id.toString(), pointsToUse);
+            } catch (err) {
+                // rollback created order if spend fails (to avoid inconsistent state)
+                await this.orderModel.findByIdAndDelete(orderDoc._id);
+                throw new BadRequestException('Failed to apply loyalty points: ' + (err.message || err.toString()));
+            }
+        }
         return orderDoc;
     }
 
@@ -255,7 +300,20 @@ export class OrdersService {
         order.isOtpVerifiedForCompletion = true;
         await order.save();
 
+        // Delete OTPs
         await this.otpModel.deleteMany({ email: owner.email });
+
+        // AWARD LOYALTY POINTS ON COMPLETION (only when order total >= 15)
+        try {
+            const totalNum = Number(order.subTotal ?? 0);
+            if (!Number.isNaN(totalNum) && totalNum >= 15) {
+                // order.user can be ObjectId; convert to string
+                await this.loyaltyService.earnPoints(order.user.toString(), order._id.toString(), totalNum);
+            }
+        } catch (err) {
+            // non-fatal: log and continue
+            console.error('Failed to award loyalty points on order completion', err);
+        }
 
         return { message: 'Order completed' };
     }

@@ -6,6 +6,9 @@
 Request a 6-digit OTP to email.  
 Used for **registration** and **forgot password**.  
 
+Header:
+Content-Type: application/json
+
 Body:
 {
   "email": "user@mail.com"

@@ -18,11 +18,13 @@ import { OffersModule } from './offers/offers.module';
 import { TaxesModule } from './taxes/taxes.module';
 import { ExtraIngredientsModule } from './extra-ingredients/extra-ingredients.module';
 import { OrdersModule } from './orders/orders.module';
+import { LoyaltyModule } from './loyalty/loyalty.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // loads .env
-    DatabaseModule, UsersModule, AuthModule, CategoriesModule, FoodModule, BeverageModule, AdsModule, PopularProductsModule, FavouriteProductsModule, OffersModule, TaxesModule, ExtraIngredientsModule, OrdersModule,                           // connects MongoDB
+    DatabaseModule, UsersModule, AuthModule, CategoriesModule, FoodModule, BeverageModule, AdsModule, PopularProductsModule, FavouriteProductsModule, OffersModule, TaxesModule, ExtraIngredientsModule, OrdersModule, LoyaltyModule, ReviewsModule,                           // connects MongoDB
   ],
   controllers: [AppController],
   providers: [AppService],
