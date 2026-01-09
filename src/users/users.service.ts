@@ -107,4 +107,10 @@ export class UsersService {
     return updatedUser;
   }
 
+  async findByPhone(phone: string) {
+    const user = await this.userModel.findOne({ phone });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
 }

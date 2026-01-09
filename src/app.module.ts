@@ -20,11 +20,14 @@ import { ExtraIngredientsModule } from './extra-ingredients/extra-ingredients.mo
 import { OrdersModule } from './orders/orders.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { CouponsModule } from './coupons/coupons.module';
+import { AdminModule } from './admin/admin.module';
+import { ContactModule } from './contact/contact.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // loads .env
-    DatabaseModule, UsersModule, AuthModule, CategoriesModule, FoodModule, BeverageModule, AdsModule, PopularProductsModule, FavouriteProductsModule, OffersModule, TaxesModule, ExtraIngredientsModule, OrdersModule, LoyaltyModule, ReviewsModule,                           // connects MongoDB
+    DatabaseModule, UsersModule, AuthModule, CategoriesModule, FoodModule, BeverageModule, AdsModule, PopularProductsModule, FavouriteProductsModule, OffersModule, TaxesModule, ExtraIngredientsModule, OrdersModule, LoyaltyModule, ReviewsModule, CouponsModule,AdminModule, ContactModule
   ],
   controllers: [AppController],
   providers: [AppService],

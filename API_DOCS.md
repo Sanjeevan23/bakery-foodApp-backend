@@ -228,8 +228,8 @@ Authorization: Bearer <JWT_TOKEN>
 ## Beverage Endpoints
 
 ### GET /beverages
-Get all beverage items.  
-Accessible by customer, cashier, delivery, admin**.
+- Get all beverage items.  
+- Accessible by customer, cashier, delivery, admin**.
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -237,7 +237,7 @@ Authorization: Bearer <JWT_TOKEN>
 ---------------------------------------------
 
 ### GET /beverages/:id
-Get a single beverage by ID.  
+- Get a single beverage by ID.  
 Accessible by **customer, cashier, delivery, admin**.
 
 Headers:
@@ -246,7 +246,7 @@ Authorization: Bearer <JWT_TOKEN>
 ---------------------------------------------
 
 ### POST /beverages
-Create a beverage item (**Admin only**).
+- Create a beverage item (**Admin only**).
 
 Headers:
 Authorization: Bearer <ADMIN_JWT_TOKEN>
@@ -288,8 +288,8 @@ Body:
 ## ads Endpoints
 
 ### GET /ads
-Get all ads.
-Accessible by all logged-in users.
+- Get all ads.
+- Accessible by all logged-in users.
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -297,7 +297,7 @@ Authorization: Bearer <JWT_TOKEN>
 ---------------------------------------------
 
 ## POST /ads
-Create a ads (Admin only).
+- Create a ads (Admin only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -310,7 +310,7 @@ endDate: 2026-02-01 ***optional***
 ---------------------------------------------
 
 ### PUT /ads/:id
-Update ads (Admin only).
+- Update ads (Admin only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -318,7 +318,7 @@ Authorization: Bearer <JWT_TOKEN>
 ---------------------------------------------
 
 ### DELETE /ads/:id
-Delete ads (Admin only).
+- Delete ads (Admin only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -328,8 +328,8 @@ Authorization: Bearer <JWT_TOKEN>
 ## Popular Products Endpoints
 
 ### GET /popular-products
-Get all popular products.
-Accessible by all logged-in users.
+- Get all popular products.
+- Accessible by all logged-in users.
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -337,7 +337,7 @@ Authorization: Bearer <JWT_TOKEN>
 ---------------------------------------------
 
 ### POST /popular-products
-Create a popular products (Admin only).
+- Create a popular products (Admin only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -351,7 +351,7 @@ Body:
 ---------------------------------------------
 
 ### DELETE /popular-products/:id
-Delete popular products (Admin only).
+- Delete popular products (Admin only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -361,7 +361,7 @@ Authorization: Bearer <JWT_TOKEN>
 ## Offer endpoints
 
 ### POST /offers
-Create or replace an offer for a product (admin only).
+- Create or replace an offer for a product (admin only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -381,7 +381,7 @@ Notes:
 ---------------------------------------------
 
 ### GET /offers
-Get active offers (only active and not expired).
+- Get active offers (only active and not expired).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -389,7 +389,7 @@ Authorization: Bearer <JWT_TOKEN>
 ---------------------------------------------
 
 ### GET /offers/admin
-Get all offers (admin only).
+- Get all offers (admin only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -397,7 +397,7 @@ Authorization: Bearer <JWT_TOKEN>
 ---------------------------------------------
 
 ### PUT /offers/:id
-Update an existing offer (admin only).
+- Update an existing offer (admin only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -407,7 +407,7 @@ Body: ***any subset of CreateOfferDto fields (productId change is allowed but va
 ---------------------------------------------
 
 ### DELETE /offers/:id
-Delete offer by offer id (admin only).
+- Delete offer by offer id (admin only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -417,7 +417,7 @@ Authorization: Bearer <JWT_TOKEN>
 ## Tax endpoints
 
 ### POST /taxes
-Create a tax (ADMIN only).
+- Create a tax (ADMIN only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -437,7 +437,7 @@ Notes:
 ---------------------------------------------
 
 ### PUT /taxes/:id
-Update tax (ADMIN only).
+- Update tax (ADMIN only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -445,7 +445,7 @@ Authorization: Bearer <JWT_TOKEN>
 ---------------------------------------------
 
 ### DELETE /taxes/:id
-Delete tax (ADMIN only).
+- Delete tax (ADMIN only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -453,7 +453,7 @@ Authorization: Bearer <JWT_TOKEN>
 ---------------------------------------------
 
 ### GET /taxes
-Get all taxes 
+- Get all taxes 
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
@@ -507,6 +507,135 @@ Delete extra-ingredients (ADMIN only).
 
 Headers:
 Authorization: Bearer <JWT_TOKEN>
+
+<!----------------------------------------------------------->
+
+## Coupon Endpoints
+
+### POST /coupons/template
+- admin can create coupons
+
+Headers:
+- Content-Type: multipart/form-data
+Authorization: Bearer <JWT_TOKEN>
+
+Body:
+  - `image` (file)  ***(required)***
+  - `expiryDays` (text) ***(required (e.g. `7`))***
+  - `isActive` (text) ***(optional (`true|false`), default = true)***
+
+---------------------------------------------
+
+### GET /coupons/template
+- Admin See all Coupons
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### POST /coupons/assign
+- Assign a template to a specific user
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+Body:
+{
+  "userId": "<userId>",
+  "templateId": "<templateId>",
+  "quantity": 1,
+  "force": false  
+}
+
+Note- 
+- `quantity defaults to 1`
+- `By default a user can receive max 2 coupons per calendar month. *force = true* overrides this.`
+
+---------------------------------------------
+
+### GET /coupons
+- Get all user coupons (admin)
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### GET /coupons/my
+- Get my coupons (customers)
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### GET /coupons/by-phone/:phone
+- Cashier get user by phone
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### POST /coupons/send-otp
+- Send OTP to coupon owner (cashier calls this)
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+Body:
+{ 
+    "couponId": "<coupon_id>" 
+}
+
+---------------------------------------------
+
+### POST /coupons/redeem
+- Redeem coupon
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+Body:
+{ 
+    "couponId": "<coupon_id>",
+    "otp":"" 
+}
+
+<!----------------------------------------------------------->
+
+## Contact Endpoints
+
+### POST /contact/init
+- admin create company details 
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+Body:
+{
+  "companyName": "Pizza Casa",
+  "phone": "+94770000000",
+  "email": "info@pizza.com",
+  "website":"www.pizzahut.com",
+  "aboutUs": "Best pizza in town",
+  "termsOfService": ["1. Use of the App...", "2. Orders..."],
+  "privacyPolicy": ["We respect your privacy...", "Data usage..."]
+}
+
+---------------------------------------------
+### GET /contact/info
+- Get Contact Info (Public)
+---
+
+### GET /contact/terms
+- Get Terms (Public)
+---
+
+### GET /contact/privacy
+- Get Privacy (Public)
+---
 
 <!----------------------------------------------------------->
 
