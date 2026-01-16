@@ -113,4 +113,8 @@ export class UsersService {
     return user;
   }
 
+  async findByEmail(email: string) {
+    return this.userModel.findOne({ email });
+  }
+
 }

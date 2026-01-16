@@ -7,6 +7,8 @@ import { ForgotPasswordRequestDto } from './dto/forgot-password-request.dto';
 import { ForgotPasswordVerifyDto } from './dto/forgot-password-verify.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { RequestOtpDto } from './dto/request-otp.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -14,8 +16,14 @@ export class AuthController {
 
   // Sends OTP (register / forgot password)
   @Post('request-otp')
-  requestOtp(@Body() body: ForgotPasswordRequestDto) {
-    return this.authService.requestOtp(body.email);
+  requestOtp(@Body() body: RequestOtpDto) {
+    // pass purpose through, default handled in service
+    return this.authService.requestOtp(body.email, body.purpose ?? 'forgot');
+  }
+  // verify OTP (does not change password)
+  @Post('verify-otp')
+  verifyOtp(@Body() body: VerifyOtpDto) {
+    return this.authService.verifyOtp(body.email, body.otp);
   }
 
   // Register user

@@ -7,6 +7,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -30,7 +31,27 @@ export class AuthService {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  async requestOtp(email: string) {
+  // purpose: 'register' | 'forgot' ; default 'forgot' for backward compat
+  async requestOtp(email: string, purpose: 'register' | 'forgot' = 'forgot') {
+    // check if user exists
+    const user = await this.usersService.findByEmail(email).catch(() => null);
+
+    if (purpose === 'register') {
+      // For registration: do not send OTP if email already registered
+      if (user) {
+        throw new ConflictException('Email already registered');
+      }
+      // proceed: create & send OTP
+    } else {
+      // purpose === 'forgot'
+      if (!user) {
+        // Do NOT create OTP. Return generic message but include sent: false
+        return { message: 'Account not exist', sent: false };
+      }
+      // proceed: create & send OTP
+    }
+
+    // Remove old OTPs and create new one
     const otp = this.generateOtp();
     await this.otpModel.deleteMany({ email });
 
@@ -41,7 +62,23 @@ export class AuthService {
     });
 
     await sendOtpEmail(email, otp);
-    return { message: 'OTP sent to email' };
+
+    // Return explicit sent flag so frontend can react
+    return { message: 'OTP sent to email', sent: true };
+  }
+
+  async verifyOtp(email: string, otp: string) {
+    const otpRecord = await this.otpModel.findOne({
+      email,
+      otp,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!otpRecord) {
+      throw new UnauthorizedException('Invalid or expired OTP');
+    }
+
+    return { message: 'OTP valid' };
   }
 
   async register(data: {

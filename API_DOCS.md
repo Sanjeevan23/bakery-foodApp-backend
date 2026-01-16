@@ -11,8 +11,13 @@ Content-Type: application/json
 
 Body:
 {
-  "email": "user@mail.com"
+  "email": "user@mail.com",
+  "purpose": "register" // or "forgot"
 }
+
+Notes:
+- purpose = "register": OTP will be sent only if email is NOT already registered (409 if already registered).
+- purpose = "forgot": OTP will be sent only if email IS registered. For privacy the endpoint returns a generic success message if no account exists.
 
 ---------------------------------------------
 
