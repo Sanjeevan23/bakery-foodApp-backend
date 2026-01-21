@@ -89,6 +89,8 @@ export class AuthService {
     lastname: string;
     phone: string;
     otp: string;
+    dob: string;
+    salutation: string;
   }) {
     const otpRecord = await this.otpModel.findOne({
       email: data.email,
@@ -110,6 +112,8 @@ export class AuthService {
       lastname: data.lastname,
       phone: data.phone,
       role: 'customer',
+      dob: new Date(data.dob),
+      salutation: data.salutation, 
     });
 
     await this.otpModel.deleteMany({ email: data.email });

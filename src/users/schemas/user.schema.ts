@@ -33,7 +33,7 @@ export class User {
     @Prop({ unique: true })
     phone: string;
 
-    @Prop()
+    @Prop({ required: true })
     dob: Date;
 
     @Prop({ default: true })
@@ -50,6 +50,9 @@ export class User {
 
     @Prop({ default: null })
     profileImage: string;
+
+    @Prop({ required: true })
+    salutation: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

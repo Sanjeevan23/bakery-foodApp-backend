@@ -3,7 +3,7 @@
    Protects backend*/
 
 // src/auth/dto/register.dto.ts
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsDateString, IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
 
@@ -24,4 +24,10 @@ export class RegisterDto {
 
   @IsString()
   phone: string;
+
+  @IsDateString() // expects ISO date string; e.g. "2002-08-23"
+  dob: string;
+
+  @IsString()
+  salutation: string;
 }
