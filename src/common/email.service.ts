@@ -11,7 +11,7 @@ export const sendOtpEmail = async (email: string, otp: string) => {
   });
 
   await transporter.sendMail({
-    from: '"Pizza Casa" <no-reply@pizza-casa.com>',
+    from: '"Bakery App" <no-reply@bakery-foodApp.com>',
     to: email,
     subject: 'Your OTP Code',
     text: `Your OTP is ${otp}. It will expire in 5 minutes.`,

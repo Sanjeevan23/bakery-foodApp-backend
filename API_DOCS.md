@@ -620,7 +620,7 @@ Authorization: Bearer <JWT_TOKEN>
 
 Body:
 {
-  "companyName": "Pizza Casa",
+  "companyName": "Pizza Bakery",
   "phone": "+94770000000",
   "email": "info@pizza.com",
   "website":"www.pizzahut.com",

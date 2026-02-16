@@ -1,6 +1,6 @@
 // ConfigModule.forRoot({ isGlobal: true }) → we can read env anywhere
 // DatabaseModule → connects to MongoDB
-
+//src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './config/database.config';

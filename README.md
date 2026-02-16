@@ -1,14 +1,14 @@
 
-# Pizza Casa - Backend
+# Bakery FoodApp - Backend
 
-Bcakend for the Pizza Casa mobile app, built using NestJS with TypeScript.
+Bcakend for the Food ordering mobile app, built using NestJS with TypeScript.
 
 ## Running Locally
 ### 1. Clone the Repository
 
 ```bash
 git clone <repository-url>
-cd pizza-casa-backend
+cd bakery-foodApp-backend
 ```
 
 ### 2. Install Dependencies
@@ -39,9 +39,9 @@ You must create an App Password:
 
 - Select:
 
--- App: Pizza Casa
+-- App: Bakery App
 
--- Device: Other → name it “Pizza Casa”
+-- Device: Other → name it “Bakery App”
 
 Copy the generated 16-character password
 
